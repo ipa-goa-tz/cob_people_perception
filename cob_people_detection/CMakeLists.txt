@@ -25,6 +25,9 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+#add GNUPLOT
+include(FindGnuplot)
+add_subdirectory(common/include/gnuplot)
 #uncomment if you have defined messages
 rosbuild_genmsg()
 #uncomment if you have defined services
@@ -61,6 +64,8 @@ rosbuild_check_for_sse()
 #			ros/src/people_detection.cpp)
 #add_custom_command(TARGET people_detector POST_BUILD COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/common/files/training_data)
 
+rosbuild_add_library(eval_tool
+			common/src/eval_tool.cpp)
 
 rosbuild_add_executable(people_detection_client
 			ros/src/people_detection_action_client.cpp)
@@ -87,6 +92,7 @@ rosbuild_add_executable(detection_tracker_node
 rosbuild_add_executable(people_detection_display_node
 			ros/src/people_detection_display_node.cpp)
 
+
 rosbuild_add_executable(face_capture_node
 			common/src/abstract_face_recognizer.cpp
 			common/src/face_recognizer.cpp
@@ -99,9 +105,11 @@ rosbuild_add_executable(coordinator_node
 			ros/src/coordinator_node.cpp)
 
 
+rosbuild_add_executable(eval_node
+			ros/src/eval_node.cpp)
+target_link_libraries(eval_node eval_tool)    
 
-    # SANDBOX EXE
-rosbuild_add_executable(impre common/src/sandbox.cpp)    
+
 
 
 # modified openni tracker

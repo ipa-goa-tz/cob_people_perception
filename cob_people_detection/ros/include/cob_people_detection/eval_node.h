@@ -24,7 +24,8 @@
 * \date Date of creation: 07.08.2012
 *
 * \brief
-* abstract class with common functions for recognizing a face within a color image (patch)
+* functions for recognizing a face within a color image (patch)
+* current approach: eigenfaces on color image
 *
 *****************************************************************
 *
@@ -56,54 +57,39 @@
 * If not, see <http://www.gnu.org/licenses/>.
 *
 ****************************************************************/
+// standard includes
+#include <sstream>
+#include <string>
+#include <vector>
 
+// ROS includes
+#include <ros/ros.h>
+#include <ros/package.h>
 
-#ifdef __LINUX__
-	#include "cob_people_detection/abstract_face_recognizer.h"
-	#include "cob_vision_utils/GlobalDefines.h"
-#else
-#include "cob_vision/cob_people_detection/common/include/cob_people_detection/PeopleDetector.h"
-#include "cob_common/cob_vision_utils/common/include/cob_vision_utils/GlobalDefines.h"
-#endif
+#include <std_msgs/Float32MultiArray.h>
+#include <cob_people_detection_msgs/EvaluationArray.h>
 
-// stream
-#include <fstream>
-
-// opencv
-#include <opencv/cv.h>
-#include <opencv/cvaux.h>
-
-
-
-using namespace ipa_PeopleDetector;
-
-AbstractFaceRecognizer::AbstractFaceRecognizer(void)
+#include "cob_people_detection/eval_tool.h"
+class EvalNode
 {
-}
+public:
 
-AbstractFaceRecognizer::~AbstractFaceRecognizer(void)
-{
-}
+	/// Constructor
+	/// @param nh ROS node handle
+  EvalNode(ros::NodeHandle nh);
+  ~EvalNode(void);
 
-unsigned long AbstractFaceRecognizer::recognizeFaces(std::vector<cv::Mat>& color_images, std::vector< std::vector<cv::Rect> >& face_coordinates, std::vector< std::vector<std::string> >& identification_labels,std::vector<std::vector<double>   >& dist_all)
-{
-	// prepare index list
-	identification_labels.clear();
-	identification_labels.resize(face_coordinates.size());
+protected:
 
-	// find identification indices
-	for (unsigned int i=0; i<color_images.size(); i++)
-	{
-		identification_labels[i].resize(face_coordinates[i].size());
-    std::vector<double>  distances;
-		unsigned long result_state = recognizeFace(color_images[i], face_coordinates[i], identification_labels[i],distances);
-    if( distances.size()>0){
-    dist_all.push_back(distances);
-    }
-		if (result_state == ipa_Utils::RET_FAILED)
-			return ipa_Utils::RET_FAILED;
-	}
 
-	return ipa_Utils::RET_OK;
-}
+void distancesCallback(const cob_people_detection_msgs::EvaluationArray::ConstPtr& distances);
+	ros::NodeHandle node_handle_;
+
+	ros::Subscriber distances_subscriber_;		///< subscribes to the positions of detected face regions
+
+   EvalTool e_;
+
+
+};
+
 

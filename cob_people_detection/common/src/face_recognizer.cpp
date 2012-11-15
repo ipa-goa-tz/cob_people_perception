@@ -79,6 +79,7 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/convenience.hpp"
 #include "boost/filesystem/path.hpp"
+
 namespace fs = boost::filesystem;
 
 
@@ -464,10 +465,11 @@ unsigned long FaceRecognizer::loadRecognitionModel(std::vector<std::string>& ide
 	return ipa_Utils::RET_OK;
 }
 
-unsigned long FaceRecognizer::recognizeFace(cv::Mat& color_image, std::vector<cv::Rect>& face_coordinates, std::vector<std::string>& identification_labels)
+unsigned long FaceRecognizer::recognizeFace(cv::Mat& color_image, std::vector<cv::Rect>& face_coordinates, std::vector<std::string>& identification_labels,std::vector<double>& distances)
 {
 	// secure this function with a mutex
 	boost::lock_guard<boost::mutex> lock(m_data_mutex);
+
 
 	int number_eigenvectors = m_eigenvectors.size();
 	if (number_eigenvectors == 0)
@@ -533,7 +535,7 @@ unsigned long FaceRecognizer::recognizeFace(cv::Mat& color_image, std::vector<cv
 		else
 		{
 			std::string face_label;
-			classifyFace(eigen_vector_weights, face_label, number_eigenvectors);
+			classifyFace(eigen_vector_weights, face_label, number_eigenvectors,distances);
 			identification_labels.push_back(face_label);
 		}
 	}
@@ -546,7 +548,7 @@ unsigned long FaceRecognizer::recognizeFace(cv::Mat& color_image, std::vector<cv
 	return ipa_Utils::RET_OK;
 }
 
-unsigned long FaceRecognizer::classifyFace(float *eigen_vector_weights, std::string& face_label, int number_eigenvectors)
+unsigned long FaceRecognizer::classifyFace(float *eigen_vector_weights, std::string& face_label, int number_eigenvectors,std::vector<double>& distances)
 {
 	double least_dist_sqared = DBL_MAX;
 
@@ -588,6 +590,10 @@ unsigned long FaceRecognizer::classifyFace(float *eigen_vector_weights, std::str
 		}
 
 		if (m_debug) std::cout << "distance to face class: " << distance << std::endl;
+    double distance_nrm=distance/sqrt(number_eigenvectors);
+    distance=distance_nrm;
+   std::cout<<"dist"<<distance<<std::endl;
+   std::cout<<"thresh"<< m_threshold_unknown<<std::endl;
 
 		if(distance < least_dist_sqared)
 		{
@@ -597,8 +603,12 @@ unsigned long FaceRecognizer::classifyFace(float *eigen_vector_weights, std::str
 			else
 				face_label = label_data[i];
 		}
+    distances.push_back(distance);
+
+
 	}
 	if (m_debug) std::cout << "least distance to face class: " << least_dist_sqared << std::endl;
+
 
 	// todo:
 //	if (personClassifier != 0 && *nearest != -1)
@@ -741,6 +751,8 @@ cv::Mat FaceRecognizer::preprocessImage(cv::Mat& input_image)
   //TODO:
   //  -- Histogramm equalization
   //  -- Image gradient for linear illumination changes 
+
+  //cv::equalizeHist(input_image,input_image);
 
 
 	// todo:

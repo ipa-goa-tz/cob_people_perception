@@ -24,7 +24,8 @@
 * \date Date of creation: 07.08.2012
 *
 * \brief
-* abstract class with common functions for recognizing a face within a color image (patch)
+* functions for recognizing a face within a color image (patch)
+* current approach: eigenfaces on color image
 *
 *****************************************************************
 *
@@ -58,52 +59,62 @@
 ****************************************************************/
 
 
-#ifdef __LINUX__
-	#include "cob_people_detection/abstract_face_recognizer.h"
-	#include "cob_vision_utils/GlobalDefines.h"
-#else
-#include "cob_vision/cob_people_detection/common/include/cob_people_detection/PeopleDetector.h"
-#include "cob_common/cob_vision_utils/common/include/cob_vision_utils/GlobalDefines.h"
-#endif
 
-// stream
-#include <fstream>
+#include "cob_people_detection/eval_node.h"
 
-// opencv
-#include <opencv/cv.h>
-#include <opencv/cvaux.h>
+// Boost
+#include <boost/shared_ptr.hpp>
+#include <std_msgs/Float32MultiArray.h>
+
+//std
+#include <iostream>
 
 
+EvalNode::EvalNode(ros::NodeHandle nh)
+: node_handle_(nh){
 
-using namespace ipa_PeopleDetector;
+  std::vector<double> threshs;
+  threshs.push_back(1118.0);
 
-AbstractFaceRecognizer::AbstractFaceRecognizer(void)
-{
+  std::string plot_title = "DIFS";
+  e_.config(plot_title,threshs,0);
+	// subscribe to head detection topic
+
+  distances_subscriber_=nh.subscribe("distances",1,&EvalNode::distancesCallback,this);
 }
 
-AbstractFaceRecognizer::~AbstractFaceRecognizer(void)
-{
+EvalNode::~EvalNode(void){};
+
+
+void EvalNode::distancesCallback(const cob_people_detection_msgs::EvaluationArray::ConstPtr& distances){
+
+  std::vector<double> dist_vec;
+  for (int i = 0; i < distances->groups[0].g_dist.size(); i++) {
+    dist_vec.push_back(distances->groups[0].g_dist[i]);
+  }
+  e_.plot(dist_vec);
 }
 
-unsigned long AbstractFaceRecognizer::recognizeFaces(std::vector<cv::Mat>& color_images, std::vector< std::vector<cv::Rect> >& face_coordinates, std::vector< std::vector<std::string> >& identification_labels,std::vector<std::vector<double>   >& dist_all)
+//#######################
+//#### main programm ####
+int main(int argc, char** argv)
 {
-	// prepare index list
-	identification_labels.clear();
-	identification_labels.resize(face_coordinates.size());
+	// Initialize ROS, specify name of node
+	ros::init(argc, argv, "eval_node");
 
-	// find identification indices
-	for (unsigned int i=0; i<color_images.size(); i++)
-	{
-		identification_labels[i].resize(face_coordinates[i].size());
-    std::vector<double>  distances;
-		unsigned long result_state = recognizeFace(color_images[i], face_coordinates[i], identification_labels[i],distances);
-    if( distances.size()>0){
-    dist_all.push_back(distances);
-    }
-		if (result_state == ipa_Utils::RET_FAILED)
-			return ipa_Utils::RET_FAILED;
-	}
+	// Create a handle for this node, initialize node
+	ros::NodeHandle nh;
 
-	return ipa_Utils::RET_OK;
+	// Create FaceRecognizerNode class instance
+	EvalNode evn(nh);
+
+
+	// Create action nodes
+	//DetectObjectsAction detect_action_node(object_detection_node, nh);
+	//AcquireObjectImageAction acquire_image_node(object_detection_node, nh);
+	//TrainObjectAction train_object_node(object_detection_node, nh);
+
+	ros::spin();
+
+	return 0;
 }
-

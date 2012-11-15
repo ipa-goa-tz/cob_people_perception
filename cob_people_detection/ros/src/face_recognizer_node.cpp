@@ -75,7 +75,6 @@
 // Boost
 #include <boost/shared_ptr.hpp>
 
-
 using namespace ipa_PeopleDetector;
 
 FaceRecognizerNode::FaceRecognizerNode(ros::NodeHandle nh)
@@ -127,6 +126,9 @@ FaceRecognizerNode::FaceRecognizerNode(ros::NodeHandle nh)
 
 	// advertise topics
 	face_recognition_publisher_ = node_handle_.advertise<cob_people_detection_msgs::DetectionArray>("face_recognitions", 1);
+
+  eval_publisher_ =node_handle_.advertise<cob_people_detection_msgs::EvaluationArray>("eval_msg",1);
+
 
 	// subscribe to head detection topic
 	face_position_subscriber_ = nh.subscribe("face_positions", 1, &FaceRecognizerNode::facePositionsCallback, this);
@@ -204,13 +206,14 @@ void FaceRecognizerNode::facePositionsCallback(const cob_people_detection_msgs::
 		head_bounding_boxes[i] = rect;
 	}
 
+    std::vector<std::vector<double> > dist_all;
 	// --- face recognition ---
 	std::vector< std::vector<std::string> > identification_labels;
 	bool identification_failed = false;
 	if (enable_face_recognition_ == true)
 	{
 		// recognize faces
-		unsigned long result_state = face_recognizer_.recognizeFaces(heads_color_images, face_bounding_boxes, identification_labels);
+		unsigned long result_state = face_recognizer_.recognizeFaces(heads_color_images, face_bounding_boxes, identification_labels,dist_all);
 		if (result_state == ipa_Utils::RET_FAILED)
 		{
 			ROS_ERROR("FaceRecognizerNode::face_positions_callback: Please load a face recognition model at first.");
@@ -228,6 +231,25 @@ void FaceRecognizerNode::facePositionsCallback(const cob_people_detection_msgs::
 				identification_labels[i][j] = "Unknown";
 		}
 	}
+
+if( dist_all.size()>0){
+    cob_people_detection_msgs::EvaluationArray eval_array_msg;
+
+//    for(int j=0;j<identification_labels.size();j++){
+      cob_people_detection_msgs::Evaluation eval_msg;
+      eval_msg.header=face_positions->header;
+//    eval_msg.g_label=identification_labels[0][j];
+      for(int k=0;k<dist_all[0].size();k++){
+      eval_msg.g_dist.push_back(dist_all[0][k]);
+      }
+//
+//
+  eval_array_msg.header=face_positions->header;
+  eval_array_msg.groups.push_back(eval_msg);
+//    }
+
+  eval_publisher_.publish(eval_array_msg);
+}
 
 	// --- publish detection message ---
 	cob_people_detection_msgs::DetectionArray detection_msg;

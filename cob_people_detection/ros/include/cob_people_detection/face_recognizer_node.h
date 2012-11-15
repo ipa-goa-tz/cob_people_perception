@@ -76,6 +76,8 @@
 #include <geometry_msgs/Point.h>
 #include <cob_people_detection_msgs/DetectionArray.h>
 #include <cob_people_detection_msgs/ColorDepthImageArray.h>
+#include <cob_people_detection_msgs/EvaluationArray.h>
+
 
 // Actions
 #include <actionlib/server/simple_action_server.h>
@@ -117,7 +119,7 @@ protected:
 	ros::Subscriber face_position_subscriber_;		///< subscribes to the positions of detected face regions
 
 	ros::Publisher face_recognition_publisher_;		///< publisher for the positions and labels of the detected faces
-
+	ros::Publisher eval_publisher_;
 	LoadModelServer* load_model_server_;				///< Action server that handles load requests for a new recognition model
 
 	FaceRecognizer face_recognizer_;		///< implementation of the face recognizer

@@ -24,7 +24,7 @@ threshold_facespace: 16000
 
 # Threshold to detect unknown faces
 # double
-threshold_unknown: 2500
+threshold_unknown: 1118 
 
 # metric for nearest neighbor search in face space: 0 = Euklidean, 1 = Mahalanobis, 2 = Mahalanobis Cosine
 # int

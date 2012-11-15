@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+  <node name="eval_node" pkg="cob_people_detection" ns="/cob_people_detection/eval_node" type="eval_node" output="screen">
+    <remap from="distances" to="/cob_people_detection/face_recognizer/eval_msg"/>
+  </node>
+</launch>

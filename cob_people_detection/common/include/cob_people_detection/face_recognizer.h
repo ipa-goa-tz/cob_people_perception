@@ -161,7 +161,7 @@ protected:
 	/// @param face_coordinates Bounding boxes of detected faces (input parameter)
 	/// @param identification_labels Vector of labels of classified faces, vector indices correspond with bounding boxes in face_coordinates
 	/// @return Return code
-	virtual unsigned long recognizeFace(cv::Mat& color_image, std::vector<cv::Rect>& face_coordinates, std::vector<std::string>& identification_labels);
+	virtual unsigned long recognizeFace(cv::Mat& color_image, std::vector<cv::Rect>& face_coordinates, std::vector<std::string>& identification_labels,std::vector<double >& distances);
 
 	/// Function to find the closest face class
 	/// The function calculates the distance of each sample image to the trained face class
@@ -169,7 +169,7 @@ protected:
 	/// @param face_label Label of closest face, or 'Unknown' if the face is unknown
 	/// @param number_eigenvectors Number of eigenvalues
 	/// @return Return code
-	virtual unsigned long classifyFace(float *eigen_vector_weights, std::string& face_label, int number_eigenvectors);
+	virtual unsigned long classifyFace(float *eigen_vector_weights, std::string& face_label, int number_eigenvectors,std::vector<double >& distances);
 
 	/// Function to Run the Eigenface-PCA algorithm
 	/// @param number_eigenvectors Target number of eigenvectors
