@@ -64,6 +64,8 @@ rosbuild_check_for_sse()
 #			ros/src/people_detection.cpp)
 #add_custom_command(TARGET people_detector POST_BUILD COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/common/files/training_data)
 
+rosbuild_add_executable(FD common/src/sandbox.cpp)
+
 rosbuild_add_library(eval_tool
 			common/src/eval_tool.cpp)
 
@@ -108,6 +110,7 @@ rosbuild_add_executable(coordinator_node
 rosbuild_add_executable(eval_node
 			ros/src/eval_node.cpp)
 target_link_libraries(eval_node eval_tool)    
+
 
 
 
