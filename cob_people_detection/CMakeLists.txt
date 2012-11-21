@@ -86,6 +86,7 @@ rosbuild_add_executable(face_recognizer_node
 			common/src/abstract_face_recognizer.cpp
 			common/src/face_recognizer.cpp
 			ros/src/face_recognizer_node.cpp)
+target_link_libraries(face_recognizer_node face_normalizer)    
 add_custom_command(TARGET face_recognizer_node POST_BUILD COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/common/files/training_data)
 
 rosbuild_add_executable(detection_tracker_node
@@ -99,6 +100,7 @@ rosbuild_add_executable(face_capture_node
 			common/src/abstract_face_recognizer.cpp
 			common/src/face_recognizer.cpp
 			ros/src/face_capture_node.cpp)
+target_link_libraries(face_capture_node face_normalizer)    
 
 rosbuild_add_executable(sensor_message_gateway_node
 			ros/src/sensor_message_gateway_node.cpp)
@@ -106,6 +108,8 @@ rosbuild_add_executable(sensor_message_gateway_node
 rosbuild_add_executable(coordinator_node
 			ros/src/coordinator_node.cpp)
 
+rosbuild_add_library(face_normalizer
+			common/src/face_normalizer.cpp)
 
 rosbuild_add_executable(eval_node
 			ros/src/eval_node.cpp)

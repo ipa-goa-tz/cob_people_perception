@@ -145,6 +145,9 @@ unsigned long FaceRecognizer::addFace(cv::Mat& color_image, cv::Rect& face_bound
 	// keep image in original format --> more flexibility later
 	cv::Mat roi = color_image(face_bounding_box);
 
+
+  if(!face_normalizer_.normalizeFace(roi))return ipa_Utils::RET_FAILED;
+
 	// Save image
 	face_images.push_back(roi);
 	m_face_labels.push_back(label);
@@ -497,6 +500,7 @@ unsigned long FaceRecognizer::recognizeFace(cv::Mat& color_image, std::vector<cv
 	{
 		cv::Rect face = face_coordinates[i];
 		convertAndResize(color_image, resized_8U1, face, resized_size);
+
 		// todo: preprocess
 		//cv::Mat preprocessedImage = preprocessImage(resized_8U1);
 
