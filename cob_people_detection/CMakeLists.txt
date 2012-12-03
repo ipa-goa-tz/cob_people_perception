@@ -117,7 +117,7 @@ target_link_libraries(eval_node eval_tool)
 
 
 
-
+rosbuild_add_executable(FN common/src/face_normalizer.cpp)
 
 # modified openni tracker
 #rosbuild_add_executable(openni_tracker ros/src/openni_tracker.cpp

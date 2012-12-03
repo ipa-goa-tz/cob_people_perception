@@ -12,7 +12,7 @@ enable_face_recognition: true
 
 # desired width and height of the Eigenfaces (=eigenvectors)
 # int
-eigenface_size: 100
+eigenface_size: 160
 
 # number of eigenvectors per person to identify -> controls the total number of eigenvectors
 # int
@@ -20,8 +20,7 @@ eigenvectors_per_person: 5
 
 # Threshold to facespace
 # double
-threshold_facespace: 16000
-
+threshold_facespace: 20000
 # Threshold to detect unknown faces
 # double
 threshold_unknown: 1118 

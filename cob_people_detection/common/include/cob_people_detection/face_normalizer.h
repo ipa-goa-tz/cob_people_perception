@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include <boost/lexical_cast.hpp>
 #define PP_NOSE 1
 #define PP_EYE_L 2
 #define PP_EYE_R 3
@@ -18,29 +19,29 @@ class FaceNormalizer{
     ~FaceNormalizer();
 
 
-    void normalizeFaces(std::vector<cv::Mat>& head_color,
-                              std::vector<cv::Mat>& head_depth,
-                              std::vector<std::vector<cv::Rect> >& face_rect);
-    bool normalizeFace(cv::Mat & img);
-    void getDepthInRect(cv::Mat& depth_map,cv::Rect& rect,float& depth);
-    void calcM(cv::Vec3f& eye_l,cv::Vec3f & eye_r,cv::Vec3f & mouth);
-    void resetNormFeatures();
-    //void showFeatures(cv::Mat img,cv::Rect& nose_det,cv::Rect& mouth_det,cv::Rect& eye_l,cv::Rect& eye_r);
-    void showFeatures(cv::Mat& img,cv::Vec3f& nose,cv::Vec3f& mouth,cv::Vec3f& eye_l,cv::Vec3f& eye_r);
-    void showFeatures(cv::Mat& img);
-    //bool getCoords(cv::Mat& img_color,cv::Mat& img_depth,cv::Vec3f& mouth,cv::Vec3f& nose,cv::Vec3f& eye_l,cv::Vec3f& eye_r);
-    bool calcModel(cv::Mat& img_color,cv::Mat& img_depth);
-    void transformAffine(cv::Mat& trafo);
-    void transformPerspective(cv::Mat& trafo);
-    void showImg(cv::Mat& img,std::string window_name);
-    bool checkIntersection(cv::Rect& eye_l_rect,cv::Rect& eye_r_rect,cv::Rect& nose_rect,cv::Rect& mouth_rect);
-
-    bool rectIntersect(cv::Rect& r1,cv::Rect& r2);
+    bool normalizeFace( cv::Mat & img,int& rows);
+    void set_norm_face(int& size);
+    bool normalize_geometry(cv::Mat& img);
+    void get_transform_affine(cv::Mat& trafo);
+    bool features_from_color(cv::Mat& img);
     bool detect_feature(cv::Mat& img,cv::Vec3f& coords,int code);
-    void tf_crop(std::vector<cv::Mat>& head_color,std::vector<std::vector<cv::Rect> >& face_rect);
-    void adjustRect(cv::Vec3f& middle,cv::Rect& r,cv::Mat& img);
+    void dyn_norm_face();
+    void resetNormFeatures();
+    void transformPerspective(cv::Mat& trafo);
 
-    bool checkModel();
+
+    // Methods for geometric normalization
+    bool normalize_radiometry(cv::Mat& img);
+    void extractVChannel(cv::Mat& img,cv::Mat& V);
+    void subVChannel(cv::Mat& img,cv::Mat& V);
+    void eqHist(cv::Mat& img);
+    void dct(cv::Mat& img);
+
+    // Debug/Output methods
+    void dump_features(cv::Mat& img);
+    void dump_img(cv::Mat& data,std::string name);
+    void showImg(cv::Mat& img,std::string window_name);
+//---------------------------------------------------------
 
   protected:
   CvHaarClassifierCascade* nose_cascade_;
@@ -74,4 +75,6 @@ class FaceNormalizer{
 
 
 
+  int epoch_ctr;
+  std::string debug_path_;
 };
