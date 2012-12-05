@@ -525,13 +525,18 @@ unsigned long FaceRecognizer::recognizeFace(cv::Mat& color_image, std::vector<cv
 
 		cv::Mat temp;
 		resized_8U1.convertTo(temp, CV_32FC1, 1.0/255.0);
-		double distance = cv::norm((temp-m_average_image), src_reconstruction, cv::NORM_L2);
 
-		//std::cout.precision( 10 );
-		if (m_debug) std::cout << "distance to face space: " << distance << std::endl;
+		double distance = cv::norm((temp-m_average_image), src_reconstruction, cv::NORM_L2);
+    std::cout << "DFFS= " << distance << std::endl;
 
 		// -2=distance to face space is too high
 		// -1=distance to face classes is too high
+
+    //THRESH norm
+    //double distance_nrm=distance/sqrt(m_eigenvectors.size()*m_eigenvectors.size());
+    //std::cout<<"normed DFFS="<<distance_nrm<<std::endl;
+
+
 		if(distance > m_threshold_facespace)
 		{
 			// no face
@@ -595,9 +600,11 @@ unsigned long FaceRecognizer::classifyFace(float *eigen_vector_weights, std::str
 		}
 
 		if (m_debug) std::cout << "distance to face class: " << distance << std::endl;
+    
+    //THRESH norm
     double distance_nrm=distance/sqrt(number_eigenvectors);
     distance=distance_nrm;
-   std::cout<<"dist"<<distance<<std::endl;
+   std::cout<<"DIFS"<<distance<<std::endl;
    std::cout<<"thresh"<< m_threshold_unknown<<std::endl;
 
 		if(distance < least_dist_sqared)

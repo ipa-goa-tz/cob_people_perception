@@ -1,7 +1,6 @@
 #include<cob_people_detection/face_normalizer.h>
 using namespace cv;
-FaceNormalizer::FaceNormalizer():scale_(1.0),
-                                epoch_ctr(0),
+FaceNormalizer::FaceNormalizer():epoch_ctr(0),
                                 debug_path_("/home/goa-tz/debug/"),
                                 debug_(true)
 {
@@ -41,11 +40,11 @@ void FaceNormalizer::set_norm_face(int& size)
   norm_size_.width=size;
 
 
-  norm_eye_l_[0]=0.25*norm_size_.width;
+  norm_eye_l_[0]=0.3*norm_size_.width;
   norm_eye_l_[1]=0.3*norm_size_.height;
   norm_eye_l_[2]=0;
 
-  norm_eye_r_[0]=0.75*norm_size_.width;
+  norm_eye_r_[0]=0.7*norm_size_.width;
   norm_eye_r_[1]=0.3*norm_size_.height;
   norm_eye_r_[2]=0;
 
@@ -80,16 +79,34 @@ void FaceNormalizer::set_norm_face(int& size)
 }
 
 
+//bool FaceNormalizer::normalizeFace( cv::Mat& img,cv::Mat& depth_map,int & rows)
+//{
+//  //norm size from input image
+//  set_norm_face(rows);
+//
+//  if(debug_) dump_img(img,"0_original");
+//
+//  //geometric normalization
+//  if(!normalize_geometry_depth(img,depth)) return false;
+//  if(debug_)dump_img(img,"4_geometry");
+//
+//  //resizing
+//  cv::resize(img,img,norm_size_,0,0);
+//  if(debug_)dump_img(img,"1_resized");
+//
+//  // radiometric normalization
+//  if(!normalize_radiometry(img)) return false;
+//  dump_img(img,"2_radiometry");
+//
+//  epoch_ctr++;
+//  return true;
+//}
 bool FaceNormalizer::normalizeFace( cv::Mat& img,int & rows)
 {
   //norm size ffrom input image
   set_norm_face(rows);
 
-  if(debug_)
-  {
-    cv::cvtColor(img,img,CV_BGR2RGB);
-    dump_img(img,"0_original");
-  }
+  if(debug_) dump_img(img,"0_original");
 
   //resizing
   cv::resize(img,img,norm_size_,0,0);
@@ -111,26 +128,30 @@ bool FaceNormalizer::normalizeFace( cv::Mat& img,int & rows)
 
 bool FaceNormalizer::normalize_radiometry(cv::Mat& img)
 {
+  if(img.channels()==3)
+  {
   cv::Mat v_channel;
   extractVChannel(img,v_channel);
 
   dct(v_channel);
   subVChannel(img,v_channel);
+  }
+  if(img.channels()==1)
+  {
+    dct(img);
+  }
 
   return true;
 }
 
 void FaceNormalizer::extractVChannel( cv::Mat& img,cv::Mat& V)
 {
-  if(debug_)cv::cvtColor(img,img,CV_RGB2HSV);
-  else cv::cvtColor(img,img,CV_BGR2HSV);
+  cv::Mat temp;
+  cv::cvtColor(img,temp,CV_BGR2HSV);
 
   std::vector<cv::Mat> channels;
-  cv::split(img,channels);
+  cv::split(temp,channels);
   channels[2].copyTo(V);
-
-  if(debug_)cv::cvtColor(img,img,CV_HSV2RGB);
-  else cv::cvtColor(img,img,CV_HSV2BGR);
 
   return;
 
@@ -138,17 +159,14 @@ void FaceNormalizer::extractVChannel( cv::Mat& img,cv::Mat& V)
 
 void FaceNormalizer::subVChannel(cv::Mat& img,cv::Mat& V)
 {
-  
-  if(debug_)cv::cvtColor(img,img,CV_RGB2HSV);
-  else cv::cvtColor(img,img,CV_BGR2HSV);
+  cv::cvtColor(img,img,CV_BGR2HSV);
 
   std::vector<cv::Mat> channels;
   cv::split(img,channels);
   channels[2]=V;
   cv::merge(channels,img);
 
-  if(debug_)cv::cvtColor(img,img,CV_HSV2RGB);
-  else cv::cvtColor(img,img,CV_HSV2BGR);
+  cv::cvtColor(img,img,CV_HSV2BGR);
 
   return;
 
@@ -213,6 +231,19 @@ bool FaceNormalizer::normalize_geometry(cv::Mat& img)
 
 }
 
+//bool FaceNormalizer::normalize_geometry_depth(cv::Mat& img,cv::Mat& depth)
+//{
+//
+//  return false;
+//  // detect features
+//  if(!features_from_color(img))return false;
+//
+//   dyn_norm_face();
+//  //calculate transformation
+//
+//  return true;
+//
+//}
 bool FaceNormalizer::features_from_color(cv::Mat& img_color)
 {
   if(!detect_feature(img_color,det_nose_,PP_NOSE))
@@ -364,19 +395,6 @@ void FaceNormalizer::get_transform_affine(cv::Mat& trafo)
 
 }
 
-void FaceNormalizer::resetNormFeatures(){
-
-  scale_=1.0;
-  norm_eye_l_= cv::Vec3f (50,60,0);
-  norm_eye_r_= cv::Vec3f (110,60,0);
-  norm_mouth_= cv::Vec3f (80,140,0);
-  norm_nose_=  cv::Vec3f (80,100,0);
-  det_eye_l_=  cv::Vec3f (0,0,0);
-  det_eye_r_=  cv::Vec3f (0,0,0);
-  det_mouth_=  cv::Vec3f (0,0,0);
-  det_nose_=   cv::Vec3f (0,0,0);
-
-}
 
 void FaceNormalizer:: showImg(cv::Mat& img,std::string window_name){
   cv::namedWindow(window_name,CV_WINDOW_AUTOSIZE);
@@ -385,6 +403,7 @@ void FaceNormalizer:: showImg(cv::Mat& img,std::string window_name){
     }
 
 void FaceNormalizer::dump_img(cv::Mat& data,std::string name){
+  
   std::string filename =debug_path_;
   filename.append(boost::lexical_cast<std::string>(epoch_ctr));
   filename.append("_");
@@ -400,7 +419,7 @@ void FaceNormalizer::dump_features(cv::Mat& img)
   cv::Mat img2;
   img.copyTo(img2);
   IplImage ipl_img=(IplImage)img2;
-   cv::circle(img2,cv::Point(det_nose_[0], det_nose_[1]),5,CV_RGB(255,0,0));
+   cv::circle(img2,cv::Point(det_nose_[0], det_nose_[1]),5, CV_RGB(255,0,0));
    cv::circle(img2,cv::Point(det_mouth_[0],det_mouth_[1]),5,CV_RGB(0,255,0));
    cv::circle(img2,cv::Point(det_eye_l_[0],det_eye_l_[1]),5,CV_RGB(255,255,0));
    cv::circle(img2,cv::Point(det_eye_r_[0],det_eye_r_[1]),5,CV_RGB(255,0,255));

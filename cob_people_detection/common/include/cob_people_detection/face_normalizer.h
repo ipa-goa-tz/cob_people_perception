@@ -20,17 +20,20 @@ class FaceNormalizer{
 
 
     bool normalizeFace( cv::Mat & img,int& rows);
-    void set_norm_face(int& size);
+
+    // Methods for geometric normalization
     bool normalize_geometry(cv::Mat& img);
     void get_transform_affine(cv::Mat& trafo);
     bool features_from_color(cv::Mat& img);
     bool detect_feature(cv::Mat& img,cv::Vec3f& coords,int code);
     void dyn_norm_face();
-    void resetNormFeatures();
+    void set_norm_face(int& size);
     void transformPerspective(cv::Mat& trafo);
 
+    //bool normalize_geometry_depth(cv::Mat& img,cv::Mat& depth);
 
-    // Methods for geometric normalization
+
+    //Methods for radiometric normalization
     bool normalize_radiometry(cv::Mat& img);
     void extractVChannel(cv::Mat& img,cv::Mat& V);
     void subVChannel(cv::Mat& img,cv::Mat& V);
@@ -59,6 +62,7 @@ class FaceNormalizer{
   CvHaarClassifierCascade* mouth_cascade_;
   CvMemStorage*            mouth_storage_;
 
+  // Member variables
   cv::Vec3f det_eye_l_;
   cv::Vec3f det_eye_r_;
   cv::Vec3f det_mouth_;
@@ -71,10 +75,6 @@ class FaceNormalizer{
 
 
   bool debug_;
-  double scale_;
-
-
-
   int epoch_ctr;
   std::string debug_path_;
 };
