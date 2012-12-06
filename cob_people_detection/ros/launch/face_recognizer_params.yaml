@@ -20,10 +20,10 @@ eigenvectors_per_person: 5
 
 # Threshold to facespace
 # double
-threshold_facespace: 20000
+threshold_facespace: 25000
 # Threshold to detect unknown faces
 # double
-threshold_unknown: 1118 
+threshold_unknown: 1900 
 
 # metric for nearest neighbor search in face space: 0 = Euklidean, 1 = Mahalanobis, 2 = Mahalanobis Cosine
 # int

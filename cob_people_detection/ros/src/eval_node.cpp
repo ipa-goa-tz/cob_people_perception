@@ -74,7 +74,7 @@ EvalNode::EvalNode(ros::NodeHandle nh)
 : node_handle_(nh){
 
   std::vector<double> threshs;
-  threshs.push_back(1118.0);
+  threshs.push_back(1900.0);
 
   std::string plot_title = "DIFS";
   e_.config(plot_title,threshs,0);
