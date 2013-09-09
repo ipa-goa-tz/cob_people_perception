@@ -12,9 +12,44 @@ from threading import Thread
 """
 Grahical User Interface for database test.
 
+To use this script a database has to be available with the following structure:
+
+                                   DatabaseFolder
+                                /     |              \
+                      class_folder1  class_folder     class_folder
+
+         c1_img0 c1_img1 c1_img2    c2_img0 c2_img1   c3_img0  c3_img1
 
 
-Remarks:
+To use this database select DatabaseFolder as Trainingset directory.
+Either use one of the protocols that automatically divide the database in training data and test data or choose the test data manually.
+
+
+####################################################################################################################
+This script will produce the following ASCII files, that are supposed to be processed by the respective binary.
+
+  - training_set_list : a list of paths to the files of the training set
+  - probe_file_list : a list of pahts to the probe files
+  - training_set_xyz_list : this list is filled with .xml paths to the
+    respective xyz-pointclouds ( only filled, when xyz- processing is enabled via GUI)
+  - probe_file_xyz_list : this list is filled with .xml paths to the
+    respective xyz-pointclouds ( only filled, when xyz- processing is enabled via GUI)
+
+  - class_overview : this list provides insight what class folder is assigned
+    what class label
+
+It takes as input the following ASCII files:
+   - invalidlist : a list of paths, that is supposed to be excluded from
+     evaluation
+   - classification_labels : File with an integer classification for every
+     probe file ( is needed for evaluation)
+
+Evaluation results are provided via print command and are based on the  ASCII file:
+   - eval_file : for single processing run
+   - eval_file# : for every single processing run  - # is the number of
+     processing run
+
+####################################################################################################################
   To extend this script with an additional testing protocol (named <PROT>)you have to do the following:
 
 
@@ -46,7 +81,7 @@ class dlg(wx.Frame):
     # path to a  nonobligatory list with invalid filenames
     self.invalid_file_path="/share/goa-tz/people_detection/eval/eval_tool_files/invalidlist"
     # name of the executable
-    self.bin_name="synth_face_test"
+    self.bin_name="face_rec_alg_test"
 
 
     # fancy information 
@@ -468,7 +503,7 @@ class dlg(wx.Frame):
     #print self.ts_list
     #print "--------------------------------------------------------"
     #print self.pf_list
-    #self.print_lists()
+    self.print_lists()
 
 
   ## Function runs binary with specified configuration
