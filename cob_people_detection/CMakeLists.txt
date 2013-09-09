@@ -99,15 +99,15 @@ message(STATUS "PCL Include dirs: ${PCL_INCLUDE_DIRS}")
           )
         target_link_libraries(face_norm_test face_normalizer )
     
-    rosbuild_add_executable(face_align_test
-          common/src/face_align_test.cpp
-          )
-        target_link_libraries(face_align_test face_normalizer )
+    #rosbuild_add_executable(face_align_test
+          #common/src/face_align_test.cpp
+          #)
+        #target_link_libraries(face_align_test face_normalizer )
 
-    rosbuild_add_executable(synth_face_test
-          common/src/synth_face_test.cpp
-          )
-        target_link_libraries(synth_face_test face_normalizer face_recognizer_algorithms)
+    #rosbuild_add_executable(synth_face_test
+          #common/src/synth_face_test.cpp
+          #)
+        #target_link_libraries(synth_face_test face_normalizer face_recognizer_algorithms)
 
     rosbuild_add_executable(tracking_evaluator
           ros/src/tracking_eval_node.cpp

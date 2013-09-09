@@ -9,44 +9,78 @@ import subprocess
 import math
 from threading import Thread
 
+"""
+Grahical User Interface for database test.
 
+
+
+Remarks:
+  To extend this script with an additional testing protocol (named <PROT>)you have to do the following:
+
+
+    1. Add entry to self.protocol_choice in line 124 - this will give you the opportunity to select it on the GUI
+    2. Add process_<PROT> function   (line 523)  - this function handles the processing sequence of the protocol and is handed over as a parameter to function process_protocol()
+    3. Enable the process_<PROT> to be called from multiprocessing(line 393) and single processing(line 301).
+    4. Add specific function <PROT> that handles  specific selection of test files etc.(line 697 ) - it is called from within the proces_<PROT> function
+
+
+    Remark:If you are confused just look at the already implemented protocols,they are all structured in the same way.
+    Maybe you should go from there..
+
+"""
+
+## Class contains a GUI that can handle database tests for a given binary
 class dlg(wx.Frame):
+
+  ## Constructor
+  #
+  # Path and binary definitions are set here
   def __init__(self):
 
     # varables for gui
-    #self.invalid_file_path="/home/tom/git/care-o-bot/cob_people_perception/cob_people_detection/debug/eval/eval_tool_files/invalidlist"
-    #self.bin_path="/home/tom/git/care-o-bot/cob_people_perception/cob_people_detection/bin/"
-    #self.base_path="/home/tom/git/care-o-bot/cob_people_perception/cob_people_detection/debug/eval/"
+    #----------------------------------------------
+    # path where all output files are going to be stored
     self.base_path="/share/goa-tz/people_detection/eval/"
+    # directory where the binary to be used is located
     self.bin_path="/home/goa-tz/git/care-o-bot/cob_people_perception/cob_people_detection/bin/"
+    # path to a  nonobligatory list with invalid filenames
     self.invalid_file_path="/share/goa-tz/people_detection/eval/eval_tool_files/invalidlist"
+    # name of the executable
     self.bin_name="synth_face_test"
-    #self.bin_name="face_rec_alg_test"
 
 
+    # fancy information 
     print "Database Evaluation GUI 2013 - ipa-goa-tz"
     print "running with binary: %s"%os.path.join(self.bin_path,self.bin_name)
 
-    #self.Evaluator=Evaluator()
+    # Evaluator, that calculates numerical results
     self.Evaluator=Evaluator(invalid_list=self.invalid_file_path)
 
 
+    # set output file directory TODO has to be valid...
     self.output_path=os.path.join(self.base_path,"eval_tool_files")
+    # get current working directory
     self.cwd=os.getcwd()
-    self.ts_dir_list = list()
-    self.f=wx.Frame(None,title="Evaluation GUI",size=(650,500))
+
+
+
+
+
 
     # variables for output
     self.pf_list = list()
     self.ts_list = list()
+    self.ts_dir_list = list()
     self.cl_list = list()
     self.unknown_list=list()
     self.invalid_list=list()
 
-    # can be switched to true if list synching has to be reversed
+    # can be switched to true if list synching has to be reversed this is only
+    # necessary when DON'T USE
     self.synch_lists_switch=False
 
 
+    # invalid file list is loaded, if it exists
     if os.path.isfile(self.invalid_file_path):
       with open(self.invalid_file_path,"r") as input_stream:
         self.invalid_list=input_stream.read().splitlines()
@@ -54,22 +88,24 @@ class dlg(wx.Frame):
       print self.invalid_list
 
 
+    # initialize GUI
+    self.f=wx.Frame(None,title="Evaluation GUI",size=(650,500))
     self.makeLayout(self.f)
     self.makeBindings()
     self.f.Show()
+
+  ## Function handles bindigs of buttons on GUI
   def makeBindings(self):
     self.dir_btn.Bind(wx.EVT_BUTTON,self.OnAddDir)
     self.pf_btn.Bind(wx.EVT_BUTTON,self.OnAddPf)
     self.ok_btn.Bind(wx.EVT_BUTTON,self.OnProcess)
     self.reset_btn.Bind(wx.EVT_BUTTON,self.OnReset)
     self.mproc_btn.Bind(wx.EVT_BUTTON,self.OnProcessMulti)
-    #self.vis_btn.Bind(wx.EVT_BUTTON,self.OnRunVis)
-    #self.eval_btn.Bind(wx.EVT_BUTTON,self.OnEvaluate)
-
 
     self.del_dir_btn.Bind(wx.EVT_BUTTON,lambda evt,gl=self.ts_glist,l=self.ts_dir_list :self.OnResetList(evt,l,gl))
     self.del_pf_btn .Bind(wx.EVT_BUTTON,lambda evt,gl=self.pf_glist,l=self.pf_list :self.OnResetList(evt,l,gl))
 
+  ## Function handles graphical setup of GUI
   def makeLayout(self,parent):
     pf_btn_txt=wx.StaticText(parent,-1,"Select probe file")
     self.pf_btn=wx.Button(parent,-1,"Browse",(70,30))
@@ -89,22 +125,13 @@ class dlg(wx.Frame):
     ok_btn_txt=wx.StaticText(parent,-1,"Processing")
     self.ok_btn=wx.Button(parent,-1,"Process",(70,30))
 
-    #vis_btn_txt=wx.StaticText(parent,-1,"Visualize")
-    #self.vis_btn=wx.Button(parent,-1,"Ok",(70,30))
-
-    #eval_btn_txt=wx.StaticText(parent,-1,"Evaluate")
-    #self.eval_btn=wx.Button(parent,-1,"Ok",(70,30))
-
-
     protocol_choice_txt=wx.StaticText(parent,-1,"Testfile selection")
     self.protocol_choice=wx.Choice(parent,-1,choices=["leave one out","leave half out","manual selection","unknown","yale2","yale3","yale4","yale5","kinect","synth"])
 
+     #  GENERIC TEST FUNCTION <PROT>
+    #self.protocol_choice=wx.Choice(parent,-1,choices=["leave one out","leave half out","manual selection","unknown","yale2","yale3","yale4","yale5","kinect","synth","<PROT>"])
 
-    #spin_rep_txt=wx.StaticText(parent,-1,"Repetitions")
     self.spin_rep=wx.SpinCtrl(parent,-1,size=wx.Size(50,30),min=1,max=60)
-
-    #classifier_choice_txt=wx.StaticText(parent,-1,"Select Classifier")
-    #self.classifier_choice=wx.Choice(parent,-1,choices=["MIN DIFFS","KNN","SVM","RandomForest"])
 
     method_choice_txt=wx.StaticText(parent,-1,"Select Method")
     self.method_choice=wx.Choice(parent,-1,choices=["2D LDA","Fisherfaces","Eigenfaces","2D PCA"])
@@ -130,8 +157,7 @@ class dlg(wx.Frame):
     # dummy for filling empty spaces
     dummy=wx.StaticText(parent,-1,'')
 
-    # Change to flexgridsizer
-    ##sizer=wx.GridSizer(8,3,0,0)
+    # Flexgridsizer handles alignment of graphical elements
     sizer=wx.FlexGridSizer(10,3,0,0)
     sizer.AddGrowableCol(2)
 
@@ -143,13 +169,8 @@ class dlg(wx.Frame):
     bs_3.Add(self.dir_btn,1)
     bs_3.Add(self.use_xyz_data,1)
     sizer.Add(bs_3,1)
-    #sizer.Add(self.dir_btn,1)
     sizer.Add(self.del_dir_btn,1)
     sizer.Add(self.ts_glist,1,wx.EXPAND)
-
-
-
-
 
     sizer.Add(pf_btn_txt,1,wx.BOTTOM |wx.ALIGN_BOTTOM)
     sizer.Add(del_pf_btn_txt,1,wx.BOTTOM |wx.ALIGN_BOTTOM)
@@ -170,23 +191,18 @@ class dlg(wx.Frame):
     sizer.Add(ok_btn_txt,1,wx.BOTTOM | wx.ALIGN_BOTTOM)
     sizer.Add(dummy,1,wx.EXPAND)
     sizer.Add(method_choice_txt,1,wx.BOTTOM | wx.ALIGN_BOTTOM)
-    #sizer.Add(classifier_choice_txt,1,wx.BOTTOM | wx.ALIGN_BOTTOM)
 
     sizer.Add(self.ok_btn,1)
     sizer.Add(self.upd_checkbox,1)
 
     bs=wx.BoxSizer(wx.HORIZONTAL)
     bs.Add(self.method_choice,1)
-    #bs.Add(self.classifier_choice,1)
     bs.Add(self.nrm_checkbox,1)
     sizer.Add(bs,1,wx.BOTTOM | wx.ALIGN_BOTTOM)
 
     sizer.Add(mproc_btn_txt,1,wx.BOTTOM | wx.ALIGN_BOTTOM)
     sizer.Add(dummy,1,wx.EXPAND)
     sizer.Add(dummy,1,wx.EXPAND)
-
-    #sizer.Add(vis_btn_txt,1,wx.BOTTOM | wx.ALIGN_BOTTOM)
-    #sizer.Add(eval_btn_txt,1,wx.BOTTOM | wx.ALIGN_BOTTOM)
 
     sizer.Add(self.mproc_btn,1)
     sizer.Add(self.spin_rep,1)
@@ -199,20 +215,17 @@ class dlg(wx.Frame):
     sizer.Add(self.reset_btn,1)
     sizer.Add(self.plist_btn,1)
     sizer.Add(dummy,1,wx.EXPAND)
-    #sizer.Add(self.eval_btn,1)
-    #sizer.Add(self.vis_btn,1)
 
     parent.SetSizer(sizer)
-#################### CALLBACK ###########################
+
+
+# Callback methods
+
+  ## Callback function when evaluation is supposed to take place.
   def OnEvaluate(self,e):
     self.evaluate()
 
-  def OnRunVis(self,e):
-    script_path=self.cwd+"/pvis.m"
-    os.system("octave  %s"%script_path)
-    os.chdir(self.base_path+"/vis")
-    os.system("eog clustering_FF.jpg ")
-    os.chdir(self.cwd)
+  ## Callback function for button to add probe files.
   def OnAddPf(self,e):
     self.pf_dlg=wx.FileDialog(None,"Select Probefile",defaultDir=self.base_path,style=wx.FD_MULTIPLE)
     if self.pf_dlg.ShowModal() == wx.ID_OK:
@@ -220,6 +233,7 @@ class dlg(wx.Frame):
       for temp in temp_list:
         self.pf_glist.Append(temp)
 
+  ## Callback function for button to add database directory.
   def OnAddDir(self,e):
     self.ts_dlg=wx.DirDialog(None,"Select directories")
     self.ts_dlg.SetPath(self.base_path)
@@ -227,10 +241,11 @@ class dlg(wx.Frame):
       self.ts_dir_list.append(self.ts_dlg.GetPath())
       self.ts_glist.Append(self.ts_dir_list[-1])
 
+  ## Callback function for button with multiple processing runs
   def OnProcessMulti(self,e):
-    # get method and classifer
+
+    # retrieve configuration information from GUI
     method=str()
-    #classifier=str()
     xyz_tag=str()
     if self.method_choice.GetCurrentSelection()==0:
       method="LDA2D"
@@ -241,60 +256,58 @@ class dlg(wx.Frame):
     elif self.method_choice.GetCurrentSelection()==3:
       method="PCA2D"
 
-   # if self.classifier_choice.GetCurrentSelection()==0:
-   #   classifier="DIFFS"
-   # elif self.classifier_choice.GetCurrentSelection()==1:
-   #   classifier="KNN"
-   # elif self.classifier_choice.GetCurrentSelection()==2:
-   #   classifier="SVM"
-   # elif self.classifier_choice.GetCurrentSelection()==3:
-   #   classifier="RF"
-
     if self.use_xyz_data.Value==True:
       xyz_tag="1"
     elif self.use_xyz_data.Value==False:
       xyz_tag="0"
 
-    # if lists are supposed to be updated
-    #if self.upd_checkbox.GetValue()==True:
+    # The test protocol is chosen.
+    # Every test protocol runs a different kind of test with the specified
+    # data.
+    # New protocols can be called here.
     prot_choice=self.protocol_choice.GetCurrentSelection()
     for i in xrange(self.spin_rep.GetValue()):
       output_file=os.path.join(self.output_path,"eval_file")
       if len(self.ts_dir_list)>0:
+          # use leave 1 out protocol
         if(self.protocol_choice.GetCurrentSelection()==0):
           self.process_protocol(self.process_leave_1_out,method)
-          #self.process_protocol(self.process_leave_1_out,method,classifier)
 
+        # use leave half out protocol
         elif(self.protocol_choice.GetCurrentSelection()==1):
           self.process_protocol(self.process_leave_half_out,method)
-          #self.process_protocol(self.process_leave_half_out,method,classifier)
 
         elif(self.protocol_choice.GetCurrentSelection()==2):
-          print "manual selection not suitable for cross validation"
+          print "manual selection not available for cross validation"
           return
+        # use "unknown" protocol
         elif(self.protocol_choice.GetCurrentSelection()==3):
           self.process_protocol(self.process_unknown,method)
-          #self.process_protocol(self.process_unknown,method,classifier)
+        # use yale protocoll with subset 2
         elif(prot_choice==4):
           self.yale_flag=2
-          #self.process_protocol(self.process_yale(2),method,classifier)
           self.process_protocol(self.process_yale(2),method)
+        # use yale protocoll with subset 3
         elif(prot_choice==5):
           self.yale_flag=3
           self.process_protocol(self.process_yale(3),method)
-          #self.process_protocol(self.process_yale(3),method,classifier)
+        # use yale protocoll with subset 4
         elif(prot_choice==6):
           self.yale_flag=4
-          #self.process_protocol(self.process_yale(4),method,classifier)
           self.process_protocol(self.process_yale(4),method)
+        # use yale protocoll with subset 5
         elif(prot_choice==7):
           self.yale_flag=5
           self.process_protocol(self.process_yale(5),method)
-          #self.process_protocol(self.process_kinect,method,classifier)
+        # process synth -- DONT USE
         elif(prot_choice==9):
           self.process_protocol(self.process_synth,method)
 
-        # run binaryin
+        # GENERIC TESTING PROTOCOL <PROT>
+        #elif(prot_choice==10):
+        #  self.process_protocol(self.process_<PROT>,method)
+
+        # run binary
         os.chdir(self.bin_path)
         if self.nrm_checkbox.GetValue()==True:
           normalizer="1"
@@ -305,14 +318,20 @@ class dlg(wx.Frame):
         t.join()
 
         os.chdir(self.cwd)
+        # run evaluation
         self.evaluate()
+        # rename output files according to number of current run
         os.rename(output_file,output_file+str(i))
+
+    # show accumulated stats
     print self.Evaluator.calc_stats()
+    # reset evaluator for next processing
     self.Evaluator.reset()
 
 
+  ## Callback function which is used when single processing run is necessary
   def OnProcess(self,e):
-    # get method and classifer
+    # get configuration from GUI
     method=str()
     classifier=str()
     xyz_tag=str()
@@ -325,61 +344,62 @@ class dlg(wx.Frame):
     elif self.method_choice.GetCurrentSelection()==3:
       method="PCA2D"
 
-    #if self.classifier_choice.GetCurrentSelection()==0:
-    #  classifier="DIFFS"
-    #elif self.classifier_choice.GetCurrentSelection()==1:
-    #  classifier="KNN"
-    #elif self.classifier_choice.GetCurrentSelection()==2:
-    #  classifier="SVM"
-    #elif self.classifier_choice.GetCurrentSelection()==3:
-    #  classifier="RF"
+    # The test protocol is chosen.
+    # Every test protocol runs a different kind of test with the specified
+    # data.
+    # New protocols can be called here.
 
     prot_choice=self.protocol_choice.GetCurrentSelection()
-    # if lists are supposed to be updated
+    # if lists are supposed to be updated - for the case of random sampling
     if self.upd_checkbox.GetValue()==True:
       if len(self.ts_dir_list)>0:
+        # leave 1 out protocol
         if(self.protocol_choice.GetCurrentSelection()==0):
           self.process_protocol(self.process_leave_1_out,method)
-          #self.process_protocol(self.process_leave_1_out,method,classifier)
           output_file=os.path.join(self.output_path,"eval_file")
           self.process_protocol(self.process_leave_1_out,method)
-          #self.process_protocol(self.process_leave_1_out,method,classifier)
 
+        # leave half out protocol
         elif(self.protocol_choice.GetCurrentSelection()==1):
           self.process_protocol(self.process_leave_half_out,method)
-          #self.process_protocol(self.process_leave_half_out,method,classifier)
           output_file=os.path.join(self.output_path,"eval_file")
           self.process_protocol(self.process_leave_half_out,method)
-          #self.process_protocol(self.process_leave_half_out,method,classifier)
 
+        # manual test file selection
         elif(self.protocol_choice.GetCurrentSelection()==2):
           self.process_protocol(self.process_manual,method)
-          #self.process_protocol(self.process_manual,method,classifier)
+        # "unknown" protocol
         elif(self.protocol_choice.GetCurrentSelection()==3):
           output_file=os.path.join(self.output_path,"eval_file")
-          #self.process_protocol(self.process_unknown,method,classifier)
           self.process_protocol(self.process_unknown,method)
+        # yale protocol with subset 2 for testing
         elif(prot_choice==4):
           self.yale_flag=2
-          #self.process_protocol(self.process_yale,method,classifier)
           self.process_protocol(self.process_yale,method)
+        # yale protocol with subset 3 for testing
         elif(prot_choice==5):
           self.yale_flag=3
-          #self.process_protocol(self.process_yale,method,classifier)
           self.process_protocol(self.process_yale,method)
+        # yale protocol with subset 4 for testing
         elif(prot_choice==6):
           self.yale_flag=4
-          #self.process_protocol(self.process_yale,method,classifier)
           self.process_protocol(self.process_yale,method)
+        # yale protocol with subset 5 for testing
         elif(prot_choice==7):
           self.yale_flag=5
           self.process_protocol(self.process_yale,method)
-          #self.process_protocol(self.process_yale,method,classifier)
+        # kinect protocoll for RGB-D database
         elif(prot_choice==8):
-          #self.process_protocol(self.process_kinect,method,classifier)
           self.process_protocol(self.process_kinect,method)
+        # synth faces protocol DON't USE
         elif(prot_choice==9):
           self.process_protocol(self.process_synth,method)
+
+        #  GENERIC TEST FUNCTION <PROT>
+        #elif(prot_choice==10):
+          #self.process_protocol(self.process_<PROT>,method)
+
+
 
     if self.use_xyz_data.Value==True:
       xyz_tag="1"
@@ -389,10 +409,8 @@ class dlg(wx.Frame):
     # run binary
     os.chdir(self.bin_path)
     if self.nrm_checkbox.GetValue()==True:
-      #bin_str="./ssa_test "+method+" "+classifier+" 1 "+xyz_tag
       normalizer="1"
     else:
-      #bin_str="./ssa_test "+method+" "+classifier+" 0 "+xyz_tag
       normalizer="0"
     t=Thread(target=self.run_bin,args=(method,normalizer,xyz_tag))
     t.start()
@@ -400,19 +418,22 @@ class dlg(wx.Frame):
 
 
     os.chdir(self.cwd)
+    # evaluate results
     self.evaluate()
 
+    # show calculatet stats
     print self.Evaluator.calc_stats()
+    # reset Evaluator for next run
     self.Evaluator.reset()
 
   def OnReset(self,e):
       self.delete_files()
 
-
   def OnResetList(self,e,l,gl):
     del l[:]
     gl.Clear()
 
+  ## Function deletes output files.
   def delete_files(self):
     os.chdir(self.output_path)
     str_list=["rm","classification_labels","eval_file","class_overview","probe_file_list","probe_file_xyz_list","training_set_list","training_set_xyz_list"]
@@ -430,24 +451,29 @@ class dlg(wx.Frame):
 #****************Internal Functions********************
 #*****************************************************
 
+  ## This function handles the generic test protocol processing and calls the specific protocol functions.
   def process_protocol(self,protocol_fn,method):
+
     self.reset_lists()
+    # make training set list and class list
     self.file_ops(self.make_ts_list)
     self.file_ops(self.make_cl_list)
-    #print self.cl_list
+    # call test protocol specific function
     protocol_fn()
+    # make sure no file is in test and training data at the same time
     self.sync_lists()
-    print self.ts_list
-    print "--------------------------------------------------------"
-    print self.pf_list
-    self.print_lists()
+    #print self.ts_list
+    #print "--------------------------------------------------------"
+    #print self.pf_list
+    #self.print_lists()
 
 
+  ## Function runs binary with specified configuration
   def run_bin(self,method,normalize,xyz):
     binary=os.path.join(self.bin_path,self.bin_name)
-
     subprocess.call([binary,method,normalize,xyz])
 
+  # Specific protocols
   def process_synth(self):
     self.process_leave_1_out()
     tmp=self.pf_list
@@ -458,6 +484,7 @@ class dlg(wx.Frame):
     self.synch_lists_switch=True
 
 
+  ## test protocol for RGB-D database
   def process_kinect2(self):
     self.ts_list=list()
     self.pf_list=list()
@@ -466,6 +493,7 @@ class dlg(wx.Frame):
     self.pf_list.append([])
     self.synch_lists_switch=False
 
+  ## test protocol for RGB-D database
   def process_kinect(self):
     self.reset_lists()
     pf_path=os.path.join(self.base_path,"eval_tool_files","pf_list")
@@ -501,17 +529,22 @@ class dlg(wx.Frame):
     self.sync_lists()
     self.print_lists()
 
-    
 
+# GENERIC TEST FUNCTION <PROT>
+  #def process_<PROT>(self):
+    ## this function handles the selection of test files from the training
+    ## database
+
+
+  ## test protocol for Yale database
   def process_yale(self):
     k=self.yale_flag
     self.file_ops(self.yale,k)
     ##append empty list for unknown calssifications
     self.pf_list.append([])
-   # k=-1
-   # self.file_ops(self.yale,k)
     self.synch_lists_switch=False
 
+  ## test protocol for unknown tests
   def process_unknown(self):
     C=len(self.cl_list)
     ctr=0
@@ -535,25 +568,30 @@ class dlg(wx.Frame):
     del rnd_list[:]
     self.synch_lists_switch=False
 
+  ## test protocol for  leave half out protocol
   def process_leave_half_out(self):
     self.file_ops(self.leave_k_out,"half")
     ##append empty list for unknown calssifications
     self.pf_list.append([])
     self.synch_lists_switch=False
 
+  ## test protocol for leave 1 out protocol
   def process_leave_1_out(self):
     self.file_ops(self.leave_k_out,1)
     ##append empty list for unknown calssifications
     self.pf_list.append([])
     self.synch_lists_switch=False
 
+  ## test protocol for manual probe file selection
   def process_manual(self):
     self.pf_list=[[] for i in range(len(self.cl_list)+1)]
     self.pf_list_format(self.pf_glist.GetItems())
     self.synch_lists_switch=False
 
+  ## Funcion handles operations with specific filter function as parameter
   def file_ops(self,fn=-1,add_param=False):
 
+    # when default value is given
     if fn ==-1:
       def fn(x):
         return x
@@ -571,6 +609,7 @@ class dlg(wx.Frame):
 
         # loop through all files
         for file in file_list_all:
+          # filter files for known image formats
           if file.endswith(".bmp") or file.endswith(".jpg") or file.endswith(".pgm") or file.endswith(".png"):
             if not file.endswith("Ambient.pgm") or file in self.invalid_list:
 
@@ -593,6 +632,7 @@ class dlg(wx.Frame):
     for rf in file_list:
       self.pf_list[-1].append(rf)
 
+#  protocol specific filter functions
   def kinect(self,files):
     ts=list()
     pf=list()
@@ -611,63 +651,36 @@ class dlg(wx.Frame):
     pf_list=list()
     for file in files:
       persp=(int(file[-8]))
-      if (persp == 7 or 
+      if (persp == 7 or
           persp == 11 or
           persp == 13 or
           persp == 11 or
           persp == 1
-         # persp == 14 or
-         # persp==  15 or
-         # persp==  16 or
-         # persp == 17 
-          #persp == 3 or
-          #persp == 2 or
-          #persp == 4 or
-          #persp == 10 or
-          #persp == 12 
           ):
         ts_list.append(file)
-      #elif (persp == 7 or 
-      #    persp == 3 or
-      #    persp == 2 or
-      #    persp == 4 or
-      #    persp == 10 or
-      #    persp == 12 
-      #    ):
-      #  pf_list.append(file)
       else:
         pf_list.append(file)
     self.pf_list.append(pf_list)
     self.ts_list.append(ts_list)
 
   def yale(self, files,k):
-   # remove files from ts list
-   # if k==-1:
-   #   for file in self.ts_list:
-   #     if file not in self.pf_list:
-   #       self.ts_list.remove(file)
 
 
      ss=[[] for i in range(5)]
      for item in files:
        if (int(item[-11:-8]) <=12 and int(item[-6:-4]) <=12):
-       #if int(item[-11:-8]) <=12:
          ss[0].append(item)
          continue
        elif (int(item[-11:-8]) <=25 and  int(item[-6:-4]) <=25):
-       #elif int(item[-11:-8]) <=25:
          ss[1].append(item)
          continue
        elif (int(item[-11:-8]) <=50 and int(item[-6:-4]) <=50):
-       #elif int(item[-11:-8]) <=50:
          ss[2].append(item)
          continue
        elif (int(item[-11:-8]) <=77 and int(item[-6:-4]) <=77):
-       #elif int(item[-11:-8]) <=77:
          ss[3].append(item)
          continue
        elif ( int(item[-11:-8]) >77 or int(item[-6:-4]) >77):
-       #elif  int(item[-11:-8]) >77:
          ss[4].append(item)
          continue
 
@@ -678,39 +691,9 @@ class dlg(wx.Frame):
              if f in c:
                c.remove(f)
 
-    #  ss=[[] for i in range(6)]
-    #  for item in files:
-    #    if (int(item[-11:-8]) ==0 and int(item[-6:-4]) ==0):
-    #      ss[0].append(item)
-    #    elif (int(item[-11:-8]) <=12 and int(item[-6:-4]) <=12):
-    #    #if int(item[-11:-8]) <=12:
-    #      ss[1].append(item)
-    #      continue
-    #    elif (int(item[-11:-8]) <=25 and  int(item[-6:-4]) <=25):
-    #    #elif int(item[-11:-8]) <=25:
-    #      ss[2].append(item)
-    #      continue
-    #    elif (int(item[-11:-8]) <=50 and int(item[-6:-4]) <=50):
-    #    #elif int(item[-11:-8]) <=50:
-    #      ss[3].append(item)
-    #      continue
-    #    elif (int(item[-11:-8]) <=77 and int(item[-6:-4]) <=77):
-    #    #elif int(item[-11:-8]) <=77:
-    #      ss[4].append(item)
-    #      continue
-    #    elif ( int(item[-11:-8]) >77 or int(item[-6:-4]) >77):
-    #    #elif  int(item[-11:-8]) >77:
-    #      ss[5].append(item)
-    #      continue
 
-    #  self.pf_list.append(ss[k])
-    #  for s in ss[1:]:
-    #    for f in s:
-    #        for c in self.ts_list:
-    #          if f in c:
-    #            c.remove(f)
-
-
+  #GENERIC TEST PROTOCOL <PROT>
+  #def <PROT>(self,files):
 
   def unknown(self, files,k):
       if k[0] ==True:
@@ -770,8 +753,6 @@ class dlg(wx.Frame):
                 ts.remove(s)
 
 
-    #print "length list%i"%len(self.pf_list[0])
-    #print "length list%i"%len(self.ts_list[0])
 
   def evaluate(self):
 
@@ -1035,12 +1016,4 @@ class Evaluator():
 if __name__=="__main__":
   app= wx.App(False)
   dlg = dlg()
-  #E=Evaluator()
-  #a=list([2,3,3,4])
-  #b=list([1,2,3,4])
-  #d=list([2,3,3,4])
-  #c=list(["1","2","3","4"])
-  #E.add_epoch(a,b,c)
-  #E.add_epoch(a,d,c)
-  #print E.mean_error_rate()
   app.MainLoop()
