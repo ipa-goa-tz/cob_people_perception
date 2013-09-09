@@ -57,8 +57,11 @@ class dlg(wx.Frame):
     self.Evaluator=Evaluator(invalid_list=self.invalid_file_path)
 
 
-    # set output file directory TODO has to be valid...
+    # set output file directory and create it if necessary
     self.output_path=os.path.join(self.base_path,"eval_tool_files")
+    if os.path.exists(self.output_path)==False:
+      os.path.mkdir(self.output_path)
+
     # get current working directory
     self.cwd=os.getcwd()
 
@@ -849,6 +852,7 @@ class dlg(wx.Frame):
 #----------------------------EVALUATOR-----------------------------------------
 #---------------------------------------------------------------------------------------
 
+### Class Epoch to be used with evaluator
 class epoch():
   def __init__(self,gt,res,desc,ctr):
     self.gt=gt
@@ -916,8 +920,8 @@ class epoch():
     self.fn=sum(fn_list)
     self.fi=sum(self.fi_list)
 
-    
 
+### Class Evaluator
 class Evaluator():
   def __init__(self,invalid_list=0):
     self.error_list_path="/share/goa-tz/people_detection/eval/eval_tool_files/error_list"
@@ -930,7 +934,6 @@ class Evaluator():
       else:
         self.invalid_files=list()
 
-    #print "EVALUATOR instantiated"
     self.epochs=list()
     self.epoch_ctr=0
 
