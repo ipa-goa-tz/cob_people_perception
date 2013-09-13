@@ -296,7 +296,6 @@ bool FaceNormalizer::normalizeFaceInteractive(cv::Mat& img, cv::Mat& depth, cv::
   {
     // radiometric normalization
     if(!normalize_radiometry(img)) valid=false;
-    cv::imwrite("/home/goa-tz/Desktop/rad.png",img);
     if(debug_)dump_img(img,"radiometry");
   }
 
@@ -353,7 +352,6 @@ bool FaceNormalizer::normalizeFace( cv::Mat& img,cv::Mat& depth,cv::Size& norm_s
   {
     // radiometric normalization
     if(!normalize_radiometry(img)) valid=false;
-    cv::imwrite("/home/goa-tz/Desktop/rad.png",img);
     if(debug_)dump_img(img,"radiometry");
   }
 
@@ -1088,21 +1086,6 @@ bool FaceNormalizer::demonstrate_head_rotation(cv::Mat& img,cv::Mat& depth)
   cv::Point2f z_draw_2d;
   projectPoint(z_draw,z_draw_2d);
 
-
-
-  //cv::line(imgres,nose_uv,x_draw_2d,cv::Scalar(255,0,0),4,8);
-  //cv::line(imgres,nose_uv,y_draw_2d,cv::Scalar(0,255,0),4,8);
-  //cv::line(imgres,nose_uv,z_draw_2d,cv::Scalar(0,0,255),4,8);
-
-
-  string frame;
-  if(i<10) frame="/home/goa-tz/Desktop/frame00"+boost::lexical_cast<std::string>(i)+".png";
-  else if(i>=10 && i<100)frame="/home/goa-tz/Desktop/frame0"+boost::lexical_cast<std::string>(i)+".png";
-  else if (i>=100) frame="/home/goa-tz/Desktop/frame"+boost::lexical_cast<std::string>(i)+".png";
-
-
-
-    cv::imwrite(frame,imgres);
   cv::imshow("FULL",imgres);
 
   int key;
