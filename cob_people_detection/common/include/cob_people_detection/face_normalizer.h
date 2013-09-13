@@ -185,6 +185,7 @@ class FaceNormalizer{
     bool isolateFace(cv::Mat& RGB,cv::Mat& XYZ);
     bool interpolate_head(cv::Mat& RGB,cv::Mat& XYZ);
     bool recordFace(cv::Mat&RGB,cv::Mat& XYZ);
+    bool normalizeFaceInteractive(cv::Mat& RGB, cv::Mat& XYZ, cv::Size& norm_size);
 
 
 
@@ -202,9 +203,19 @@ class FaceNormalizer{
 	/// @return Return true/false whether reading was successful.
     bool read_scene(cv::Mat& RGB,cv::Mat& XYZ,std::string path);
 
+    /// The function manufactures artificial head poses
+    /// @brief Function for artificial head poses.
+    /// @param[in,out] img Color image that is normalized.
+    /// @param[in,out] depth Pointcloud that is normalized.
+    /// @return Return true/false whether rotation was successful.
+    bool demonstrate_head_rotation(cv::Mat& img,cv::Mat& depth);
+    void assign_pos_from_cb(int x, int y);
+
 
   FNConfig config_;                     ///< Configuration of face normalizer
   protected:
+
+    void apply_binomial_kernel(int val,cv::Size dim,float* img,float* occ);
 
     /// The function normalizes image geometry using xyz information.
     /// @brief Function for geometric normalization.
@@ -215,12 +226,6 @@ class FaceNormalizer{
 
 
 
-    /// The function manufactures artificial head poses
-    /// @brief Function for artificial head poses.
-    /// @param[in,out] img Color image that is normalized.
-    /// @param[in,out] depth Pointcloud that is normalized.
-    /// @return Return true/false whether rotation was successful.
-    bool rotate_head(cv::Mat& img,cv::Mat& depth);
 
 
     /// The function detects facial features (nose, eyes) in color image.
@@ -243,6 +248,10 @@ class FaceNormalizer{
     /// @param[in] type Feature type that is supposed t be detected.
     /// @return Return true/false whether feature could be detected.
     bool detect_feature(cv::Mat& img,cv::Point2f& coords,FACE::FEATURE_TYPE type);
+
+
+
+    bool projectPointCloudNEW(cv::Mat& img,cv::Mat& depth, cv::Mat& img_res, cv::Mat& depth_res);
 
 
 
@@ -322,6 +331,11 @@ class FaceNormalizer{
     /// @param[in,out] img Color image which is saved.
     void dump_img(cv::Mat& data,std::string name);
 
+    /// This function lets the user detect the image features interactively
+    bool features_from_color_interactive(cv::Mat& img);
+    /// This function contains the interactive loop
+    bool ia_loop(cv::Mat img);
+
 
   bool initialized_;      ///< Flag indicating if face normalizer is already initialized
   int epoch_ctr_;        ///<  Counter for input frames
@@ -346,6 +360,7 @@ class FaceNormalizer{
 
   FACE::FaceFeatures<cv::Point2f> f_det_img_ ;  ///< Facial features detected in color image.
   FACE::FaceFeatures<cv::Point3f> f_det_xyz_;   ///< Facial features detected in point cloud.
+  std::vector<cv::Point2f> img_feat_vec_;
 
   cv::Size  norm_size_;   ///< Norm size the image is scaled to.
   cv::Size  input_size_;  ///< Size of input image

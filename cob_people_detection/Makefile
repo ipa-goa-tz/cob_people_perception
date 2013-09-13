@@ -485,6 +485,19 @@ head_detector_node/fast:
 .PHONY : head_detector_node/fast
 
 #=============================================================================
+# Target rules for targets named head_rotation_demo
+
+# Build rule for target.
+head_rotation_demo: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 head_rotation_demo
+.PHONY : head_rotation_demo
+
+# fast build rule for target.
+head_rotation_demo/fast:
+	$(MAKE) -f CMakeFiles/head_rotation_demo.dir/build.make CMakeFiles/head_rotation_demo.dir/build
+.PHONY : head_rotation_demo/fast
+
+#=============================================================================
 # Target rules for targets named people_detection_client
 
 # Build rule for target.
@@ -1094,6 +1107,30 @@ common/src/head_detector.cpp.s:
 	$(MAKE) -f CMakeFiles/head_detector_node.dir/build.make CMakeFiles/head_detector_node.dir/common/src/head_detector.cpp.s
 .PHONY : common/src/head_detector.cpp.s
 
+common/src/head_rotation_demo.o: common/src/head_rotation_demo.cpp.o
+.PHONY : common/src/head_rotation_demo.o
+
+# target to build an object file
+common/src/head_rotation_demo.cpp.o:
+	$(MAKE) -f CMakeFiles/head_rotation_demo.dir/build.make CMakeFiles/head_rotation_demo.dir/common/src/head_rotation_demo.cpp.o
+.PHONY : common/src/head_rotation_demo.cpp.o
+
+common/src/head_rotation_demo.i: common/src/head_rotation_demo.cpp.i
+.PHONY : common/src/head_rotation_demo.i
+
+# target to preprocess a source file
+common/src/head_rotation_demo.cpp.i:
+	$(MAKE) -f CMakeFiles/head_rotation_demo.dir/build.make CMakeFiles/head_rotation_demo.dir/common/src/head_rotation_demo.cpp.i
+.PHONY : common/src/head_rotation_demo.cpp.i
+
+common/src/head_rotation_demo.s: common/src/head_rotation_demo.cpp.s
+.PHONY : common/src/head_rotation_demo.s
+
+# target to generate assembly for a file
+common/src/head_rotation_demo.cpp.s:
+	$(MAKE) -f CMakeFiles/head_rotation_demo.dir/build.make CMakeFiles/head_rotation_demo.dir/common/src/head_rotation_demo.cpp.s
+.PHONY : common/src/head_rotation_demo.cpp.s
+
 common/src/munkres/munkres.o: common/src/munkres/munkres.cpp.o
 .PHONY : common/src/munkres/munkres.o
 
@@ -1490,6 +1527,7 @@ help:
 	@echo "... face_recognizer_algorithms"
 	@echo "... face_recognizer_node"
 	@echo "... head_detector_node"
+	@echo "... head_rotation_demo"
 	@echo "... install"
 	@echo "... install/local"
 	@echo "... install/strip"
@@ -1554,6 +1592,9 @@ help:
 	@echo "... common/src/head_detector.o"
 	@echo "... common/src/head_detector.i"
 	@echo "... common/src/head_detector.s"
+	@echo "... common/src/head_rotation_demo.o"
+	@echo "... common/src/head_rotation_demo.i"
+	@echo "... common/src/head_rotation_demo.s"
 	@echo "... common/src/munkres/munkres.o"
 	@echo "... common/src/munkres/munkres.i"
 	@echo "... common/src/munkres/munkres.s"

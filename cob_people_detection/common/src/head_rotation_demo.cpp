@@ -9,7 +9,7 @@ int main(int argc, const char *argv[])
 
   std::cout<<"[FaceNormalizer] running scene no. "<<argv[1]<<"...\n";
   FaceNormalizer::FNConfig cfg;
-  cfg.eq_ill=true;
+  cfg.eq_ill=false;
   cfg.align=true;
   cfg.resize=true;
   cfg.cvt2gray=true;
@@ -28,7 +28,7 @@ int main(int argc, const char *argv[])
   std::string xml_path=i_path;
   xml_path.append(".xml");
 
-  if(!fn.read_scene(xyz,img,xml_path))return 0;
+  if(!fn.read_scene(xyz,img,xml_path))return false;
   cv::Mat wmat1,wmat2;
   img.copyTo(wmat1);
   img.copyTo(wmat2);
@@ -39,30 +39,25 @@ int main(int argc, const char *argv[])
   std::vector<cv::Mat> synth_images;
   // call member functions of FaceNormalizer
   //fn.synthFace(wmat1,xyz,norm_size,synth_images);
-  //fn.demonstrate_head_rotation(wmat1,xyz);
+  fn.demonstrate_head_rotation(wmat1,xyz);
 
 
   //fn.isolateFace(wmat1,xyz);
-  //cv::imshow("ORIGINAL",wmat1);
-  //cv::waitKey(0);
   //fn.normalizeFace(wmat1,xyz,norm_size,depth);
-  fn.normalizeFaceInteractive(wmat1,xyz,norm_size);
   //fn.recordFace(wmat1,xyz);
 
 
-  wmat1.convertTo(wmat1,CV_8UC1);
- // cv::equalizeHist(depth,depth);
-  cv::imshow("NORMALIZED",wmat1);
-  cv::waitKey(0);
-
-  fn.normalizeFace(wmat2,xyz,norm_size);
-  //fn.recordFace(wmat1,xyz);
-
-
+  //synth_images.push_back(wmat1);
  // depth.convertTo(depth,CV_8UC1,255);
  // cv::equalizeHist(depth,depth);
-  wmat2.convertTo(wmat2,CV_8UC1);
-  cv::imshow("NORMALIZED",wmat2);
+  cv::imshow("NORMALIZED",wmat1);
+  for(int j = 0;j<synth_images.size();j++)
+  {
+    cv::Mat temp;
+  synth_images[j].convertTo(temp,CV_8UC1);
+  cv::imshow("NORMALIZED",temp);
   cv::waitKey(0);
+  std::cout<<j<<std::endl;
+  }
   return 0;
 }

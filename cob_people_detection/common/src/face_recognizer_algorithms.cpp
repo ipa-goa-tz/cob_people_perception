@@ -589,10 +589,6 @@ bool ipa_PeopleDetector::FaceRecognizer_LDA2D::trainModel(std::vector<cv::Mat>& 
 
 
         model_label_vec_=label_vec;
-        for( int i=0;i<model_label_vec_.size();i++)
-        {
-          std::cout<<model_label_vec_[i];
-        }
         //initiate PCA
         SubspaceAnalysis::LDA2D LDA2D(img_vec,model_label_vec_,num_classes_,target_dim_);
 
