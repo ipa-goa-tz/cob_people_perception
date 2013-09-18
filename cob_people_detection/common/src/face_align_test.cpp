@@ -45,9 +45,9 @@ int main(int argc, const char *argv[])
   //fn.isolateFace(wmat1,xyz);
   //cv::imshow("ORIGINAL",wmat1);
   //cv::waitKey(0);
-  //fn.normalizeFace(wmat1,xyz,norm_size,depth);
-  fn.normalizeFaceInteractive(wmat1,xyz,norm_size);
-  //fn.recordFace(wmat1,xyz);
+  if(!fn.normalizeFace(wmat1,xyz,norm_size,depth))fn.normalizeFaceInteractive(wmat1,xyz,norm_size);
+
+    //fn.recordFace(wmat1,xyz);
 
 
   wmat1.convertTo(wmat1,CV_8UC1);
@@ -55,14 +55,14 @@ int main(int argc, const char *argv[])
   cv::imshow("NORMALIZED",wmat1);
   cv::waitKey(0);
 
-  fn.normalizeFace(wmat2,xyz,norm_size);
   //fn.recordFace(wmat1,xyz);
 
 
+  //fn.normalizeFace(wmat2,xyz,norm_size);
  // depth.convertTo(depth,CV_8UC1,255);
  // cv::equalizeHist(depth,depth);
-  wmat2.convertTo(wmat2,CV_8UC1);
-  cv::imshow("NORMALIZED",wmat2);
-  cv::waitKey(0);
+  //wmat2.convertTo(wmat2,CV_8UC1);
+  //cv::imshow("NORMALIZED",wmat2);
+  //cv::waitKey(0);
   return 0;
 }

@@ -84,7 +84,7 @@ class dlg(wx.Frame):
     self.bin_name="face_rec_alg_test"
 
 
-    # fancy information 
+    # fancy information
     print "Database Evaluation GUI 2013 - ipa-goa-tz"
     print "running with binary: %s"%os.path.join(self.bin_path,self.bin_name)
 

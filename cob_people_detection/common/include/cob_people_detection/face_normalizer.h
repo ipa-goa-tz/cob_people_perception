@@ -180,7 +180,6 @@ class FaceNormalizer{
     /// Function to synthetisize artificial poses from one image
     bool synthFace(cv::Mat &RGB,cv::Mat& XYZ, cv::Size& norm_size,std::vector<cv::Mat>& synth_images);
     bool synth_head_poses(cv::Mat& img,cv::Mat& depth,std::vector<cv::Mat>& synth_images);
-    bool synth_head_poses_relative(cv::Mat& img,cv::Mat& depth,std::vector<cv::Mat>& synth_images);
     bool eliminate_background(cv::Mat& RGB,cv::Mat& XYZ,float background_thresh);
     bool isolateFace(cv::Mat& RGB,cv::Mat& XYZ);
     bool interpolate_head(cv::Mat& RGB,cv::Mat& XYZ);
@@ -251,7 +250,6 @@ class FaceNormalizer{
 
 
 
-    bool projectPointCloudNEW(cv::Mat& img,cv::Mat& depth, cv::Mat& img_res, cv::Mat& depth_res);
 
 
 

@@ -9,7 +9,7 @@ int main(int argc, const char *argv[])
   std::cout<<"[FaceNormalizer] running scene no. "<<argv[1]<<"...\n";
   FaceNormalizer::FNConfig cfg;
   cfg.eq_ill=true;
-  cfg.align=true;
+  cfg.align=false;
   cfg.resize=true;
   cfg.cvt2gray=false;
   cfg.extreme_illumination_condtions=false;
@@ -19,7 +19,7 @@ int main(int argc, const char *argv[])
 
   cv::Mat depth,img,xyz;
   std::string i_path;
-  i_path="/share/goa-tz/people_detection/eval/kinect3d_features/";
+  i_path="/share/goa-tz/people_detection/eval/KinectIPA/";
 
   i_path.append(argv[1]);
   std::string pgm_path=i_path;
@@ -37,6 +37,7 @@ int main(int argc, const char *argv[])
 
   //fn.normalizeFace(wmat1,norm_size);
   //
+  wmat1.convertTo(wmat1,CV_8UC1);
   cv::imshow("NORMALIZED",wmat1);
   cv::waitKey(0);
 
